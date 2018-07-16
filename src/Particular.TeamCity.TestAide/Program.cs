@@ -16,14 +16,14 @@ namespace Particular.TeamCity.TestAide
             };
 
             var gitVersionMajor = app.Option<int>(
-                    "-gvmaj | --gitversionmajor", 
-                    "Value pulled from GitVersion.Major parameter in TeamCity", 
+                    "-gvmaj | --gitversionmajor",
+                    "Value pulled from GitVersion.Major parameter in TeamCity",
                     CommandOptionType.SingleValue);
             gitVersionMajor.IsRequired();
 
             var gitVersionMinor = app.Option<int>(
-                    "-gvmin | --gitversionminor", 
-                    "Value pulled from GitVersion.Minor parameter in TeamCity", 
+                    "-gvmin | --gitversionminor",
+                    "Value pulled from GitVersion.Minor parameter in TeamCity",
                     CommandOptionType.SingleValue);
             gitVersionMinor.IsRequired();
 
@@ -51,7 +51,6 @@ namespace Particular.TeamCity.TestAide
                     CommandOptionType.SingleValue);
             doUnixDependencies.IsRequired();
             doUnixDependencies.Accepts().Values("true", "false");
-            
 
             app.OnExecute(() =>
             {
@@ -130,11 +129,9 @@ namespace Particular.TeamCity.TestAide
                     //run the tests
                     Console.WriteLine($"Running tests in {testingDir}");
                     var trxFile = Path.Combine(testingDir, "testoutput.trx");
-                        
+
                     var testProcess = new Process
                     {
-                        
-
                         StartInfo = new ProcessStartInfo
                         {
                             FileName = "dotnet",
