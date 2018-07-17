@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
-    <ToolCommandName>tc-testaide</ToolCommandName>
+    <ToolCommandName>tctestaide</ToolCommandName>
     <PackAsTool>true</PackAsTool>
     <Description>.NET Core global tool to execute tests for TeamCity</Description>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
