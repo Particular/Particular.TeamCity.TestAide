@@ -1,20 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputType>Exe</OutputType>
     <ToolCommandName>tc-testaide</ToolCommandName>
-    <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <Description>.NET Core global tool to execute tests for TeamCity</Description>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Copyright>© 2010-2018 NServiceBus Ltd. All rights reserved.</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.5" />
+    <PackageReference Include="Particular.Packaging" Version="0.1.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
