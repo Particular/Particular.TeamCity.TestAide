@@ -128,7 +128,7 @@ namespace Particular.TeamCity.TestAide
 
                     //run the tests
                     Console.WriteLine($"Running tests in {testingDir}");
-                    var trxFile = Path.Combine(testingDir, "testoutput.trx");
+                    var trxFile = Path.Combine(testingDir, "TestResults", "testoutput.trx");
 
                     var testProcess = new Process
                     {
