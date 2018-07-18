@@ -100,9 +100,9 @@ namespace Particular.TeamCity.TestAide
                 {
                     if (doUnixDependencies.ParsedValue == "true")
                     {
-                        Console.WriteLine($"Creating {currentProjectDirectory}.runtimeconfig.dev.json for resolving Unix-specific dependencies from NuGet packages");
+                        Console.WriteLine($"Creating {currentProjectDirectory.ParsedValue}.runtimeconfig.dev.json for resolving Unix-specific dependencies from NuGet packages");
                         var artifactsDir = Path.Combine(testingDir, "bin","Release", "netcoreapp2.0");
-                        using (var stream = File.CreateText(Path.Combine(artifactsDir, $"{currentProjectDirectory}.runtimeconfig.dev.json")))
+                        using (var stream = File.CreateText(Path.Combine(artifactsDir, $"{currentProjectDirectory.ParsedValue}.runtimeconfig.dev.json")))
                         {
                             stream.Write("{\"runtimeOptions\":{\"additionalProbingPaths\":[\"$HOME/.dotnet/store/|arch|/|tfm|\",\"$HOME/.nuget/packages\",\"/usr/share/dotnet/sdk/NuGetFallbackFolder\"]}}");
                             stream.Flush();
