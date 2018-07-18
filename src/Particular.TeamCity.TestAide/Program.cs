@@ -83,7 +83,7 @@ namespace Particular.TeamCity.TestAide
                 foreach (var testingDir in testingDirs)
                 {
                     //check for artifacts directory
-                    var artifactsDir = Path.Combine(testingDir, @"bin\Release\netcoreapp2.0");
+                    var artifactsDir = Path.Combine(testingDir, "bin", "Release", "netcoreapp2.0");
                     if (!Directory.Exists(artifactsDir))
                     {
                         Console.WriteLine($"Missing artifacts in {artifactsDir}");
@@ -101,7 +101,7 @@ namespace Particular.TeamCity.TestAide
                     if (doUnixDependencies.ParsedValue == "true")
                     {
                         Console.WriteLine($"Creating {currentProjectDirectory}.runtimeconfig.dev.json for resolving Unix-specific dependencies from NuGet packages");
-                        var artifactsDir = Path.Combine(testingDir, @"bin\Release\netcoreapp2.0");
+                        var artifactsDir = Path.Combine(testingDir, "bin","Release", "netcoreapp2.0");
                         using (var stream = File.CreateText(Path.Combine(artifactsDir, $"{currentProjectDirectory}.runtimeconfig.dev.json")))
                         {
                             stream.Write("{\"runtimeOptions\":{\"additionalProbingPaths\":[\"$HOME/.dotnet/store/|arch|/|tfm|\",\"$HOME/.nuget/packages\",\"/usr/share/dotnet/sdk/NuGetFallbackFolder\"]}}");
