@@ -12,7 +12,7 @@ namespace Particular.TeamCity.TestAide
         {
             var app = new CommandLineApplication
             {
-                Name = "tc-testaide"
+                Name = "tctestaide"
             };
 
             var gitVersionMajor = app.Option<int>(
