@@ -104,12 +104,37 @@ namespace Particular.TeamCity.TestAide
                     if (doUnixDependencies.ParsedValue == "true")
                     {
                         Console.WriteLine($"Creating {dirInfo.Name}.runtimeconfig.dev.json for resolving Unix-specific dependencies from NuGet packages");
-                        var artifactsDir = Path.Combine(testingDir, "bin","Release", "netcoreapp2.0");
+                        var artifactsDir = Path.Combine(testingDir, "bin", "Release", "netcoreapp2.0");
                         using (var stream = File.CreateText(Path.Combine(artifactsDir, $"{dirInfo.Name}.runtimeconfig.dev.json")))
                         {
                             stream.Write("{\"runtimeOptions\":{\"additionalProbingPaths\":[\"$HOME/.dotnet/store/|arch|/|tfm|\",\"$HOME/.nuget/packages\",\"/usr/share/dotnet/sdk/NuGetFallbackFolder\"]}}");
                             stream.Flush();
                             stream.Close();
+                        }
+
+                        var restoreProcess = new Process
+                        {
+                            StartInfo = new ProcessStartInfo
+                            {
+                                FileName = "dotnet",
+                                Arguments = "restore",
+                                WorkingDirectory = testingDir,
+                                UseShellExecute = false,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true,
+                                CreateNoWindow = true
+                            }
+                        };
+
+                        restoreProcess.Start();
+
+                        Console.WriteLine(restoreProcess.StandardOutput.ReadToEnd());
+                        Console.WriteLine(restoreProcess.StandardError.ReadToEnd());
+
+                        restoreProcess.WaitForExit();
+                        if (exitCode == 0)
+                        {
+                            exitCode = restoreProcess.ExitCode;
                         }
                     }
 
