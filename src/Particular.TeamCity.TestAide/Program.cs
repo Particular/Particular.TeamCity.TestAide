@@ -151,6 +151,8 @@ namespace Particular.TeamCity.TestAide
                     Console.WriteLine(testProcess.StandardOutput.ReadToEnd());
                     Console.WriteLine(testProcess.StandardError.ReadToEnd());
 
+                    testProcess.WaitForExit();
+
                     if (exitCode == 0)
                     {
                         exitCode = testProcess.ExitCode;
