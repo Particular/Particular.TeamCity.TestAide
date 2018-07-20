@@ -111,22 +111,6 @@ namespace Particular.TeamCity.TestAide
                             stream.Flush();
                             stream.Close();
                         }
-
-                        var restoreProcess = new Process
-                        {
-                            StartInfo = new ProcessStartInfo
-                            {
-                                FileName = "dotnet",
-                                Arguments = "restore",
-                                WorkingDirectory = testingDir,
-                                UseShellExecute = false,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true,
-                                CreateNoWindow = true
-                            }
-                        };
-
-                        restoreProcess.Start();
                     }
 
                     //run the tests
@@ -138,7 +122,7 @@ namespace Particular.TeamCity.TestAide
                         StartInfo = new ProcessStartInfo
                         {
                             FileName = "dotnet",
-                            Arguments = $"test -c Release -f netcoreapp2.0 --no-restore --no-build --logger \"trx;LogFileName={trxFile}\"",
+                            Arguments = $"test -c Release -f netcoreapp2.0 --no-build --logger \"trx;LogFileName={trxFile}\"",
                             WorkingDirectory = testingDir,
                             UseShellExecute = false,
                             RedirectStandardOutput = true,
