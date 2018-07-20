@@ -96,6 +96,8 @@ namespace Particular.TeamCity.TestAide
                     return 1;
                 }
 
+                var exitCode = 0;
+
                 foreach (var testingDir in testingDirs)
                 {
                     var dirInfo = new DirectoryInfo(testingDir);
@@ -148,12 +150,14 @@ namespace Particular.TeamCity.TestAide
                     testProcess.Start();
                     Console.WriteLine(testProcess.StandardOutput.ReadToEnd());
                     Console.WriteLine(testProcess.StandardError.ReadToEnd());
+
+                    if (exitCode == 0)
+                    {
+                        exitCode = testProcess.ExitCode;
+                    }
                 }
 
-
-                //                app.ShowHelp();
-
-                return 0;
+                return exitCode;
             });
 
             return app.Execute(args);
