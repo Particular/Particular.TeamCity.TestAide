@@ -4,6 +4,7 @@ namespace Particular.TeamCity.TestAide
 {
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using McMaster.Extensions.CommandLineUtils;
 
     class Program
@@ -78,94 +79,63 @@ namespace Particular.TeamCity.TestAide
 
                 var testingDirs = Directory.GetDirectories(currentProjectDirectory.ParsedValue, "*Tests");
 
-                //validate artifacts
-                var missingArtifacts = false;
-                foreach (var testingDir in testingDirs)
-                {
-                    //check for artifacts directory
-                    var artifactsDir = Path.Combine(testingDir, "bin", "Release", "netcoreapp2.0");
-                    if (!Directory.Exists(artifactsDir))
-                    {
-                        Console.WriteLine($"Missing artifacts in {artifactsDir}");
-                        missingArtifacts = true;
-                    }
-                }
-
-                if (missingArtifacts)
-                {
-                    return 1;
-                }
-
                 var exitCode = 0;
 
                 foreach (var testingDir in testingDirs)
                 {
-                    var dirInfo = new DirectoryInfo(testingDir);
-                    if (doUnixDependencies.ParsedValue == "true")
+                    // validate artifacts adn get target framework
+                    var targetDirectories = Directory.GetDirectories(Path.Combine(testingDir, "bin", "Release"), "netcoreapp*")
+                                                .Concat(Directory.GetDirectories(Path.Combine(testingDir, "bin", "Release"), "netstandard*"));
+
+                    if (targetDirectories.Any())
                     {
-                        Console.WriteLine($"Creating {dirInfo.Name}.runtimeconfig.dev.json for resolving Unix-specific dependencies from NuGet packages");
-                        var artifactsDir = Path.Combine(testingDir, "bin", "Release", "netcoreapp2.0");
-                        var homeDir = Environment.GetEnvironmentVariable("HOME");
-                        using (var stream = File.CreateText(Path.Combine(artifactsDir, $"{dirInfo.Name}.runtimeconfig.dev.json")))
-                        {
-                            stream.Write($"{{\"runtimeOptions\":{{\"additionalProbingPaths\":[\"{homeDir}/.dotnet/store/|arch|/|tfm|\",\"{homeDir}/.nuget/packages\",\"/usr/share/dotnet/sdk/NuGetFallbackFolder\"]}}}}");
-                            stream.Flush();
-                            stream.Close();
-                        }
+                        var dirInfo = new DirectoryInfo(testingDir);
 
-                        var restoreProcess = new Process
+                        foreach (var targetDirectory in targetDirectories)
                         {
-                            StartInfo = new ProcessStartInfo
+                            var targetDirectoryInfo = new DirectoryInfo(targetDirectory);
+                            var targetName = targetDirectoryInfo.Name;
+
+                            var restoreExitCode = UpdateUnixDependencies(doUnixDependencies.ParsedValue, dirInfo, targetName);
+                            if (exitCode == 0)
                             {
-                                FileName = "dotnet",
-                                Arguments = "restore",
-                                WorkingDirectory = testingDir,
-                                UseShellExecute = false,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true,
-                                CreateNoWindow = true
+                                exitCode = restoreExitCode;
                             }
-                        };
 
-                        restoreProcess.Start();
+                            //run the tests
+                            Console.WriteLine($"Running tests in {testingDir} for {targetName}");
+                            var trxFile = Path.Combine(testingDir, "TestResults", $"testoutput-{targetName}.trx");
 
-                        Console.WriteLine(restoreProcess.StandardOutput.ReadToEnd());
-                        Console.WriteLine(restoreProcess.StandardError.ReadToEnd());
+                            var testProcess = new Process
+                            {
+                                StartInfo = new ProcessStartInfo
+                                {
+                                    FileName = "dotnet",
+                                    Arguments = $"test -c Release -f {targetName} --no-build --logger \"trx;LogFileName={trxFile}\"",
+                                    WorkingDirectory = testingDir,
+                                    UseShellExecute = false,
+                                    RedirectStandardOutput = true,
+                                    RedirectStandardError = true,
+                                    CreateNoWindow = true
+                                }
+                            };
 
-                        restoreProcess.WaitForExit();
-                        if (exitCode == 0)
-                        {
-                            exitCode = restoreProcess.ExitCode;
+                            testProcess.Start();
+                            Console.WriteLine(testProcess.StandardOutput.ReadToEnd());
+                            Console.WriteLine(testProcess.StandardError.ReadToEnd());
+
+                            testProcess.WaitForExit();
+
+                            if (exitCode == 0)
+                            {
+                                exitCode = testProcess.ExitCode;
+                            }
                         }
                     }
-
-                    //run the tests
-                    Console.WriteLine($"Running tests in {testingDir}");
-                    var trxFile = Path.Combine(testingDir, "TestResults", "testoutput.trx");
-
-                    var testProcess = new Process
+                    else
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "dotnet",
-                            Arguments = $"test -c Release -f netcoreapp2.0 --no-build --logger \"trx;LogFileName={trxFile}\"",
-                            WorkingDirectory = testingDir,
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            CreateNoWindow = true
-                        }
-                    };
-
-                    testProcess.Start();
-                    Console.WriteLine(testProcess.StandardOutput.ReadToEnd());
-                    Console.WriteLine(testProcess.StandardError.ReadToEnd());
-
-                    testProcess.WaitForExit();
-
-                    if (exitCode == 0)
-                    {
-                        exitCode = testProcess.ExitCode;
+                        Console.WriteLine($"Unable to find artifacts in {testingDir}");
+                        exitCode = 1;
                     }
                 }
 
@@ -173,6 +143,46 @@ namespace Particular.TeamCity.TestAide
             });
 
             return app.Execute(args);
+        }
+
+        static int UpdateUnixDependencies(string doUnixDependencies, DirectoryInfo projectDirectoryInfo, string targetName)
+        {
+            if (doUnixDependencies == "true")
+            {
+                Console.WriteLine($"Creating {projectDirectoryInfo.Name}.runtimeconfig.dev.json for resolving Unix-specific dependencies from NuGet packages");
+                var artifactsDir = Path.Combine(projectDirectoryInfo.FullName, "bin", "Release", targetName);
+                var homeDir = Environment.GetEnvironmentVariable("HOME");
+                using (var stream = File.CreateText(Path.Combine(artifactsDir, $"{projectDirectoryInfo.Name}.runtimeconfig.dev.json")))
+                {
+                    stream.Write($"{{\"runtimeOptions\":{{\"additionalProbingPaths\":[\"{homeDir}/.dotnet/store/|arch|/|tfm|\",\"{homeDir}/.nuget/packages\",\"/usr/share/dotnet/sdk/NuGetFallbackFolder\"]}}}}");
+                    stream.Flush();
+                    stream.Close();
+                }
+
+                var restoreProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = "restore",
+                        WorkingDirectory = projectDirectoryInfo.FullName,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    }
+                };
+
+                restoreProcess.Start();
+
+                Console.WriteLine(restoreProcess.StandardOutput.ReadToEnd());
+                Console.WriteLine(restoreProcess.StandardError.ReadToEnd());
+
+                restoreProcess.WaitForExit();
+                return restoreProcess.ExitCode;
+            }
+
+            return 0;
         }
     }
 }
