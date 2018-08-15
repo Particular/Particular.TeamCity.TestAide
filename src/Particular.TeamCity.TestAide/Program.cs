@@ -64,7 +64,7 @@ namespace Particular.TeamCity.TestAide
                 if (netCoreMajorSupport.ParsedValue > gitVersionMajor.ParsedValue)
                 {
                     Console.WriteLine("This Major doesn't support netcore. No netcore tests required");
-                    return 1;
+                    return 0;
                 }
 
                 if (netCoreMajorSupport.ParsedValue == gitVersionMajor.ParsedValue)
@@ -72,7 +72,7 @@ namespace Particular.TeamCity.TestAide
                     if (netCoreMinorSupport.ParsedValue > gitVersionMinor.ParsedValue)
                     {
                         Console.WriteLine("This Minor doesn't support netcore. No netcore tests required");
-                        return 1;
+                        return 0;
                     }
                 }
 
