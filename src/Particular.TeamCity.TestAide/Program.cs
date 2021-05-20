@@ -84,6 +84,7 @@
                 {
                     // validate artifacts adn get target framework
                     var targetDirectories = Directory.GetDirectories(Path.Combine(testingDir, "bin", "Release"), "netcoreapp*")
+                                                .Concat(Directory.GetDirectories(Path.Combine(testingDir, "bin", "Release"), "net?.*")
                                                 .Concat(Directory.GetDirectories(Path.Combine(testingDir, "bin", "Release"), "netstandard*"));
 
                     if (targetDirectories.Any())
