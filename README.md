@@ -1,5 +1,5 @@
 # Particular.TeamCity.TestAide
-Console app that executes .NET core tests within TeamCity
+Console app that executes .NET Core and .NET 5 and .NET 6 tests within TeamCity
 
 ## Parameters
 All parameters are required
